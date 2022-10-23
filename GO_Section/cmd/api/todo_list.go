@@ -112,9 +112,9 @@ func (app *application) updateTodo_listHandler(w http.ResponseWriter, r *http.Re
 	}
 	// Create an input struct to hold todolistdata read in from the client
 	// We update the input struct to use pointers because pointers have a
-	// default value of nil false
+	// default value of nil
 	// if a field remains nil then we know that the client did not update it
-	//create an input struct to hold the todolistdata
+	//create an input struct to hold the todo_list data
 	var todolistdata struct {
 		Task_Name   *string  `json:"task_name"`
 		Description *string  `json:"description"`
