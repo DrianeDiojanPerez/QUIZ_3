@@ -12,30 +12,38 @@ import (
 //create entires hander for the POST /v1/entries endpoint
 func (app *application) createInformationHandler(w http.ResponseWriter, r *http.Request){
 	//our target decode destination
-	var input struct{
-		Name string `json:"name"`
-		String string `json:"string"`
-		Translate string `json:"translate"`
-		Phone string `json:"phone"`
-		Email string `json:"email"`
-		Website string `json:"website"`
-		Mode []string `json:"mode"`
-		
+	var todo_list struct{
+		Task_Name   string    `json:"task_name"`
+		Description string    `json:"desription"`
+		Notes       string    `json:"notes"`
+		Category    string    `json:"category"`
+		Priority    string    `json:"priority"`
+		Status      []string  `json:"status"`
+		Version     int32     `json:"version"`
+		// Name string `json:"name"`
+		// String string `json:"string"`
+		// Translate string `json:"translate"`
+		// Phone string `json:"phone"`
+		// Email string `json:"email"`
+		// Website string `json:"website"`
+		// Mode []string `json:"mode"`
+
+	
 	}
-	err := app.readJSON(w, r, &input)
+	err := app.readJSON(w, r, &todo_list)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
 	//copyung the values
-	entries := &data.EntriesData{
-		Name: input.Name,
-		String: input.String,
-		Translate: input.Translate,
-		Phone: input.Phone,
-		Email: input.Email,
-		Website: input.Website,
-		Mode: input.Mode,
+	entries := &data.Todo_list{
+		Task_Name: todo_list.Task_Name,
+		Description: todo_list.Description,
+		Notes: todo_list.Notes,
+		Category: todo_list.Category,
+		Priority: todo_list.Priority,
+		Status: todo_list.Status,
+		Version: todo_list.Version,
 	}
 
 	//initialize a new validator instance
@@ -47,7 +55,7 @@ func (app *application) createInformationHandler(w http.ResponseWriter, r *http.
 		return
 	}
 	//Display the request
-	fmt.Fprintf(w, "%+v\n", input)
+	fmt.Fprintf(w, "%+v\n", todo_list)
 
 	//fmt.Fprintln(w, "Create a New Entry")
 }

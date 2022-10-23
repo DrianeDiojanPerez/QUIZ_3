@@ -7,56 +7,52 @@ import (
 	"quiz.3.driane.perez.net/internal/validator"
 )
 
-type EntriesData struct {
-	ID int64 `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	Name string `json:"name"`
-	String string `json:"string"`
-	Translate string `json:"translate"`
-	Phone string `json:"phone"`
-	Email string `json:"email"`
-	Website string `json:"website"`
-	Mode []string `json:"mode"`
-	Version int32 `json:"version"`
+type Todo_list struct {
+	ID          int64     `json:"id"`
+	CreatedAt   time.Time `json:"-"`
+	Task_Name   string    `json:"task_name"`
+	Description string    `json:"desription"`
+	Notes       string    `json:"notes"`
+	Category    string    `json:"category"`
+	Priority    string    `json:"priority"`
+	Status      []string  `json:"status"`
+	Version     int32     `json:"version"`
+	
+	// Name string `json:"name"`
+	// String string `json:"string"`
+	// Translate string `json:"translate"`
+	// Phone string `json:"phone"`
+	// Email string `json:"email"`
+	// Website string `json:"website"`
+	// Mode []string `json:"mode"`
+	
 	// Status string `json:"status,omitempty"`
 	// Enviornment string `json:"enviornment,omitempty"`
 	// Version string `json:"version,omitempty"`
 }
-func ValidateEntires(v *validator.Validator, entries *EntriesData)  {
+func ValidateEntires(v *validator.Validator, entries *Todo_list)  {
 	//use the check method to execute our validation checks
-	v.Check(entries.Name != "", "name", "must be provided")
-	v.Check(len(entries.Name) <= 200, "name", "must not be more than 200 bytes long")
+	v.Check(entries.Task_Name != "", "task_name", "must be provided")
+	v.Check(len(entries.Task_Name) <= 200, "task_name", "must not be more than 200 bytes long")
 
-	v.Check(entries.String != "", "string", "must be provided")
-	v.Check(len(entries.String) <= 200, "string", "must not be more than 200 bytes long")
+	v.Check(entries.Description != "", "description", "must be provided")
+	v.Check(len(entries.Description) <= 200, "description", "must not be more than 200 bytes long")
 
-	v.Check(entries.Translate != "", "translate", "must be provided")
-	v.Check(len(entries.Translate) <= 200, "translate", "must not be more than 200 bytes long")
+	v.Check(entries.Notes != "", "notes", "must be provided")
+	v.Check(len(entries.Notes) <= 200, "notes", "must not be more than 200 bytes long")
 
-	v.Check(entries.Phone != "", "phone", "must be provided")
-	v.Check(validator.Matches(entries.Phone,validator.PhoneRegex), "phone", "must provide a valid phone number")
-	v.Check(len(entries.Phone) <= 300, "phone", "must not be more than 300 bytes long")
+	v.Check(entries.Category != "", "category", "must be provided")
+	v.Check(len(entries.Category) <= 200, "category", "must not be more than 200 bytes long")
 
-	v.Check(entries.Email != "", "email", "must be provided")
-	v.Check(len(entries.Email) <= 300, "email", "must not be more than 300 bytes long")
-	v.Check(validator.Matches(entries.Email,validator.EmailRegex), "email", "must provide a valid email")
+	v.Check(entries.Priority != "", "priority", "must be provided")
+	v.Check(len(entries.Priority) <= 200, "priority", "must not be more than 200 bytes long")
 
-	v.Check(entries.Website != "", "website", "must be provided")
-	v.Check(len(entries.Website) <= 200, "website", "must not be more than 200 bytes long")
-	v.Check(validator.ValidWebsite(entries.Website), "website", "must be a valid URL")
+	v.Check(entries.Status != nil, "status", "must be provided")
+	v.Check(len(entries.Status) >= 1, "status", "must contain one Status")
+	v.Check(len(entries.Status) <= 5, "status", "must contain at least five Status")
+	v.Check(validator.Unique(entries.Status),"status", "must not contain duplicate Status")
 
-	v.Check(entries.Mode != nil, "mode", "must be provided")
-	v.Check(len(entries.Mode) >= 1, "mode", "must contain one mode")
-	v.Check(len(entries.Mode) <= 5, "mode", "must contain at least five mode")
-	v.Check(validator.Unique(entries.Mode),"mode", "must not contain duplicate entries")
-
-
-
-
-
-
-			
-		
-		//Mode []string `json:"mode"`
+	v.Check(entries.Version != 0, "priority", "must be provided")
+	v.Check(entries.Version <= 200, "priority", "must not be more than 200 bytes long")
 	
 }
