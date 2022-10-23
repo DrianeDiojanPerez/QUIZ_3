@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/lib/pq"
@@ -197,11 +198,17 @@ func (m Todo_listModel) Delete(id int64) error {
 }
 
 // The GetAll() returns a list of all the todo items sorted by ID
-func (m Todo_listModel) GetAll(task_name string, priority string, status []string, filters Filters) ([]*Todo, Metadata, error) {
+func (m Todo_listModel) GetAll(task_name string, priority string, status []string, filters Filters) ([]*Todo_list, Metadata, error) {
 	// Construct the query
 	query := fmt.Sprintf(`
-		SELECT COUNT(*) OVER(), id, created_at, task_name, description, notes, category, priority, status, version
-		FROM todotbl
+		SELECT COUNT(*) OVER(), 
+		id, created_at, 
+		task_name, description, 
+		notes, category, 
+		priority, 
+		status, 
+		version
+		FROM todo_list
 		WHERE (to_tsvector('simple',task_name) @@ plainto_tsquery('simple', $1) OR $1 = '')
 		AND (to_tsvector('simple',priority) @@ plainto_tsquery('simple', $2) OR $2 = '')
 		AND (status @> $3 OR $3 = '{}')
@@ -220,35 +227,35 @@ func (m Todo_listModel) GetAll(task_name string, priority string, status []strin
 	// Close the result set
 	defer rows.Close()
 	totalRecords := 0
-	// Initialize an empty slice to hold the todo data
-	todos := []*Todo{}
+	// Initialize an empty slice to hold the todo_list data
+	todo_listD := []*Todo_list{}
 	// Iterate over the rows in the results set
 	for rows.Next() {
-		var todo Todo
-		// Scan the values from the row in to the Todo struct
+		var todo_List Todo_list
+		// Scan the values from the row in to the Todo_list struct
 		err := rows.Scan(
 			&totalRecords,
-			&todo.ID,
-			&todo.CreatedAt,
-			&todo.Task_Name,
-			&todo.Description,
-			&todo.Notes,
-			&todo.Category,
-			&todo.Priority,
-			pq.Array(&todo.Status),
-			&todo.Version,
+			&todo_List.ID,
+			&todo_List.CreatedAt,
+			&todo_List.Task_Name,
+			&todo_List.Description,
+			&todo_List.Notes,
+			&todo_List.Category,
+			&todo_List.Priority,
+			pq.Array(&todo_List.Status),
+			&todo_List.Version,
 		)
 		if err != nil {
 			return nil, Metadata{}, err
 		}
 		// Add the Todo to our slice
-		todos = append(todos, &todo)
+		todo_listD = append(todo_listD, &todo_List)
 	}
 	// Check for errors after looping through the results set
 	if err = rows.Err(); err != nil {
 		return nil, Metadata{}, err
 	}
 	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
-	// Return the slice of Todos
-	return todos, metadata, nil
+	// Return the slice of Todo_list
+	return todo_listD, metadata, nil
 }

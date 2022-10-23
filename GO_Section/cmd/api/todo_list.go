@@ -239,7 +239,7 @@ func (app *application) listtodo_listHandler(w http.ResponseWriter, r *http.Requ
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	// Send a JSON response containing all the todo items
+	// Send a JSON response containing all the todo_list items
 	err = app.writeJSON(w, http.StatusOK, envelope{"todo_list": todo_list, "metadata": metadata}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
