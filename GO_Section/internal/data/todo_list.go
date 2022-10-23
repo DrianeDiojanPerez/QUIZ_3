@@ -89,7 +89,7 @@ func (m Todo_listModel) Get(id int64) (*Todo_list, error) {
 	`
 	// Declare a Todo_list variable to hold the return data
 	var todo_list Todo_list
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// Cleanup to prevent memory leaks
 	defer cancel()
@@ -121,6 +121,43 @@ func (m Todo_listModel) Get(id int64) (*Todo_list, error) {
 
 // Update() allows us to edit/alter a specific Todolist
 func (m Todo_listModel) Update(Todo_list *Todo_list) error {
+	query := `
+	UPDATE todo_list 
+	set task_name = $1,
+	description = $2, 
+	notes = $3,
+	category = $4, 
+	priority = $5,
+	status = $6, 
+	version = version + 1
+	WHERE id = $7
+	AND version = $8
+	RETURNING version
+	`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// Cleanup to prevent memory leaks
+	defer cancel()
+
+	args := []interface{}{
+		Todo_list.Task_Name,
+		Todo_list.Description,
+		Todo_list.Notes,
+		Todo_list.Category,
+		Todo_list.Priority,
+		pq.Array(Todo_list.Status),
+		Todo_list.ID,
+		Todo_list.Version,
+	}
+	// Check for edit conflicts
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&Todo_list.Version)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
 	return nil
 }
 
