@@ -177,3 +177,29 @@ func (app *application) updateTodo_listHandler(w http.ResponseWriter, r *http.Re
 	}
 
 }
+// The deleteTodo_listItemHandler() allows the user to delete a todo_list item from the databse by using the ID
+func (app *application) deleteTodo_listItemHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	// Delete the todo item from the database. Send a 404 Not Found status code to the
+	// client if there is no matching record
+	err = app.models.Todo_list.Delete(id)
+	// Error handling
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+	// Return 200 Status OK to the client with a success message
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "todo item successfully deleted"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

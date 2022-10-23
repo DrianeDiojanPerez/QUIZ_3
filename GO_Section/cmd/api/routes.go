@@ -14,5 +14,6 @@ func (app *application) routes () *httprouter.Router{
 	router.HandlerFunc(http.MethodPost, "/v1/todo_list", app.createtodo_listHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/todo_list/:id", app.showtodo_listHandler)
 	router.HandlerFunc(http.MethodPatch, "/v1/todo_list/:id", app.updateTodo_listHandler)
+	router.HandlerFunc(http.MethodDelete, "/v1/todoitems/:id", app.deleteTodo_listItemHandler)
 	return router
 }
