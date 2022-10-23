@@ -163,5 +163,32 @@ func (m Todo_listModel) Update(Todo_list *Todo_list) error {
 
 // deletes() removes a specific todolist
 func (m Todo_listModel) Delete(id int64) error {
+	// Ensure that there is a valid id
+	if id < 1 {
+		return ErrRecordNotFound
+	}
+	// Create the delete query
+	query := `
+		DELETE FROM todo_list
+		WHERE id = $1
+	`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// Cleanup to prevent memory leaks
+	defer cancel()
+	// Execute the query
+	results, err := m.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	// Check how many rows were affected by the delete operations. We
+	// call the RowsAffected() method on the result variable
+	rowsAffected, err := results.RowsAffected()
+	if err != nil {
+		return err
+	}
+	// Check if no rows were affected
+	if rowsAffected == 0 {
+		return ErrRecordNotFound
+	}
 	return nil
 }
