@@ -59,9 +59,15 @@ func (m Todo_listModel) Insert(Todo_list *Todo_list) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// Cleanup to prevent memory leaks
 	defer cancel()
+
 	// Collect the data fields into a slice
-	args := []interface{}{Todo_list.Task_Name, Todo_list.Description, Todo_list.Notes,
-		Todo_list.Category, Todo_list.Priority, pq.Array(Todo_list.Status),
+	args := []interface{}{
+		Todo_list.Task_Name, 
+		Todo_list.Description, 
+		Todo_list.Notes,
+		Todo_list.Category, 
+		Todo_list.Priority, 
+		pq.Array(Todo_list.Status),
 	}
 	return m.DB.QueryRowContext(ctx, query, args...).Scan(&Todo_list.ID, &Todo_list.CreatedAt, &Todo_list.Version)
 }
