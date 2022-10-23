@@ -4,6 +4,7 @@ package data
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/lib/pq"
@@ -21,7 +22,8 @@ type Todo_list struct {
 	Status      []string  `json:"status"`
 	Version     int32     `json:"version"`
 }
-func ValidateEntires(v *validator.Validator, entries *Todo_list)  {
+
+func ValidateEntires(v *validator.Validator, entries *Todo_list) {
 	//use the check method to execute our validation checks
 	v.Check(entries.Task_Name != "", "task_name", "must be provided")
 	v.Check(len(entries.Task_Name) <= 200, "task_name", "must not be more than 200 bytes long")
@@ -41,15 +43,16 @@ func ValidateEntires(v *validator.Validator, entries *Todo_list)  {
 	v.Check(entries.Status != nil, "status", "must be provided")
 	v.Check(len(entries.Status) >= 1, "status", "must contain one Status")
 	v.Check(len(entries.Status) <= 5, "status", "must contain at least five Status")
-	v.Check(validator.Unique(entries.Status),"status", "must not contain duplicate Status")
-	
+	v.Check(validator.Unique(entries.Status), "status", "must not contain duplicate Status")
+
 }
-//define a todo_list model which wraps a sql.DB connection pool
+
+// define a todo_list model which wraps a sql.DB connection pool
 type Todo_listModel struct {
 	DB *sql.DB
 }
 
-//Insert() allows us to create a new todo_list
+// Insert() allows us to create a new todo_list
 func (m Todo_listModel) Insert(Todo_list *Todo_list) error {
 	query := `
 	INSERT INTO todo_list (task_name, description, notes, category, priority, status)
@@ -62,24 +65,66 @@ func (m Todo_listModel) Insert(Todo_list *Todo_list) error {
 
 	// Collect the data fields into a slice
 	args := []interface{}{
-		Todo_list.Task_Name, 
-		Todo_list.Description, 
+		Todo_list.Task_Name,
+		Todo_list.Description,
 		Todo_list.Notes,
-		Todo_list.Category, 
-		Todo_list.Priority, 
+		Todo_list.Category,
+		Todo_list.Priority,
 		pq.Array(Todo_list.Status),
 	}
 	return m.DB.QueryRowContext(ctx, query, args...).Scan(&Todo_list.ID, &Todo_list.CreatedAt, &Todo_list.Version)
 }
-//GET () allow us to retrieve a specific todo_list
+
+// GET () allow us to retrieve a specific todo_list
 func (m Todo_listModel) Get(id int64) (*Todo_list, error) {
-	return nil, nil
+	//ensure that there is a valid id
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+	// Create query
+	query := `
+		SELECT id, created_at, task_name, description, notes, category, priority, status, version
+		FROM todo_list
+		WHERE id = $1
+	`
+	// Declare a Todo_list variable to hold the return data
+	var todo_list Todo_list
+	
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// Cleanup to prevent memory leaks
+	defer cancel()
+	// Execute Query using the QueryRowContext()
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(
+		&todo_list.ID,
+		&todo_list.CreatedAt,
+		&todo_list.Task_Name,
+		&todo_list.Description,
+		&todo_list.Notes,
+		&todo_list.Category,
+		&todo_list.Priority,
+		pq.Array(&todo_list.Status),
+		&todo_list.Version,
+	)
+	// Handle any errors
+	if err != nil {
+		// Check the type of error
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	// Success
+	return &todo_list, nil
 }
-//Update() allows us to edit/alter a specific Todolist
+
+// Update() allows us to edit/alter a specific Todolist
 func (m Todo_listModel) Update(Todo_list *Todo_list) error {
 	return nil
 }
-//deletes() removes a specific todolist
+
+// deletes() removes a specific todolist
 func (m Todo_listModel) Delete(id int64) error {
 	return nil
 }
