@@ -120,7 +120,9 @@ func (m Todo_listModel) Get(id int64) (*Todo_list, error) {
 }
 
 // Update() allows us to edit/alter a specific Todolist
+//optimistic locking (version number)
 func (m Todo_listModel) Update(Todo_list *Todo_list) error {
+	//created a query
 	query := `
 	UPDATE todo_list 
 	set task_name = $1,
