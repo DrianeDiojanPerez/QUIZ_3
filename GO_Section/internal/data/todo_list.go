@@ -89,7 +89,8 @@ func (m Todo_listModel) Get(id int64) (*Todo_list, error) {
 	`
 	// Declare a Todo_list variable to hold the return data
 	var todo_list Todo_list
-
+	//create a context
+	//time starts after context is created
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	// Cleanup to prevent memory leaks
 	defer cancel()
