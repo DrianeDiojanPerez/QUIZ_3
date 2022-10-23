@@ -51,8 +51,5 @@ func ValidateEntires(v *validator.Validator, entries *Todo_list)  {
 	v.Check(len(entries.Status) >= 1, "status", "must contain one Status")
 	v.Check(len(entries.Status) <= 5, "status", "must contain at least five Status")
 	v.Check(validator.Unique(entries.Status),"status", "must not contain duplicate Status")
-
-	v.Check(entries.Version != 0, "priority", "must be provided")
-	v.Check(entries.Version <= 200, "priority", "must not be more than 200 bytes long")
 	
 }

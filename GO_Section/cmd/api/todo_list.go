@@ -18,17 +18,7 @@ func (app *application) createInformationHandler(w http.ResponseWriter, r *http.
 		Notes       string    `json:"notes"`
 		Category    string    `json:"category"`
 		Priority    string    `json:"priority"`
-		Status      []string  `json:"status"`
-		Version     int32     `json:"version"`
-		// Name string `json:"name"`
-		// String string `json:"string"`
-		// Translate string `json:"translate"`
-		// Phone string `json:"phone"`
-		// Email string `json:"email"`
-		// Website string `json:"website"`
-		// Mode []string `json:"mode"`
-
-	
+		Status      []string  `json:"status"`	
 	}
 	err := app.readJSON(w, r, &todo_list)
 	if err != nil {
@@ -43,7 +33,6 @@ func (app *application) createInformationHandler(w http.ResponseWriter, r *http.
 		Category: todo_list.Category,
 		Priority: todo_list.Priority,
 		Status: todo_list.Status,
-		Version: todo_list.Version,
 	}
 
 	//initialize a new validator instance
