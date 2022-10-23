@@ -203,3 +203,46 @@ func (app *application) deleteTodo_listItemHandler(w http.ResponseWriter, r *htt
 		app.serverErrorResponse(w, r, err)
 	}
 }
+// The listtodo_listHandler() allows the client to see a listing of todo items
+// based on a set criteria
+func (app *application) listtodo_listHandler(w http.ResponseWriter, r *http.Request) {
+	// Create an input struct to hold our query parameter
+	var input struct {
+		Task_Name string
+		Priority  string
+		Status    []string
+		data.Filters
+	}
+	// Initialize a validator
+	v := validator.New()
+	// Get the URL values map
+	qs := r.URL.Query()
+	// use the helper methods to extract values
+	input.Task_Name = app.readString(qs, "task_name", "")
+	input.Priority = app.readString(qs, "priority", "")
+	input.Status = app.readCSV(qs, "status", []string{})
+	// Get the page information using the read int method
+	input.Filters.Page = app.readInt(qs, "page", 1, v)
+	input.Filters.PageSize = app.readInt(qs, "page_size", 20, v)
+	// Get the sort information
+	input.Filters.Sort = app.readString(qs, "sort", "id")
+	// Specify the allowed sort values
+	input.Filters.SortList = []string{"id", "task_name", "priority", "-id", "-task_name", "-priority"}
+	// Check for validation errors
+	if data.ValidateFilters(v, input.Filters); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+	// Get a listing of all todo items
+	todo_list, metadata, err := app.models.Todo_list.GetAll(input.Task_Name, input.Priority, input.Status, input.Filters)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	// Send a JSON response containing all the todo items
+	err = app.writeJSON(w, http.StatusOK, envelope{"todo_list": todo_list, "metadata": metadata}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}

@@ -195,3 +195,60 @@ func (m Todo_listModel) Delete(id int64) error {
 	}
 	return nil
 }
+
+// The GetAll() returns a list of all the todo items sorted by ID
+func (m Todo_listModel) GetAll(task_name string, priority string, status []string, filters Filters) ([]*Todo, Metadata, error) {
+	// Construct the query
+	query := fmt.Sprintf(`
+		SELECT COUNT(*) OVER(), id, created_at, task_name, description, notes, category, priority, status, version
+		FROM todotbl
+		WHERE (to_tsvector('simple',task_name) @@ plainto_tsquery('simple', $1) OR $1 = '')
+		AND (to_tsvector('simple',priority) @@ plainto_tsquery('simple', $2) OR $2 = '')
+		AND (status @> $3 OR $3 = '{}')
+		ORDER BY %s %s, id ASC
+		LIMIT $4 OFFSET $5`, filters.sortColumn(), filters.sortOrder())
+
+	// Create a 3-second-timeout context
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	args := []interface{}{task_name, priority, pq.Array(status), filters.limit(), filters.offset()}
+	// Execute query
+	rows, err := m.DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+	// Close the result set
+	defer rows.Close()
+	totalRecords := 0
+	// Initialize an empty slice to hold the todo data
+	todos := []*Todo{}
+	// Iterate over the rows in the results set
+	for rows.Next() {
+		var todo Todo
+		// Scan the values from the row in to the Todo struct
+		err := rows.Scan(
+			&totalRecords,
+			&todo.ID,
+			&todo.CreatedAt,
+			&todo.Task_Name,
+			&todo.Description,
+			&todo.Notes,
+			&todo.Category,
+			&todo.Priority,
+			pq.Array(&todo.Status),
+			&todo.Version,
+		)
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+		// Add the Todo to our slice
+		todos = append(todos, &todo)
+	}
+	// Check for errors after looping through the results set
+	if err = rows.Err(); err != nil {
+		return nil, Metadata{}, err
+	}
+	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
+	// Return the slice of Todos
+	return todos, metadata, nil
+}
