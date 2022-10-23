@@ -222,7 +222,7 @@ func (m Todo_listModel) GetAll(task_name string, priority string, status []strin
 	// Execute query
 	rows, err := m.DB.QueryContext(ctx, query, args...)
 	if err != nil {
-		// return nil, Metadata{}, err
+		return nil, Metadata{}, err
 	}
 	// Close the result set
 	defer rows.Close()

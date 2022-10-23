@@ -2,7 +2,11 @@
 
 package data
 
-import "quiz.3.driane.perez.net/internal/validator"
+import (
+	"strings"
+
+	"quiz.3.driane.perez.net/internal/validator"
+)
 
 type Filters struct {
 	Page     int
@@ -20,3 +24,31 @@ func ValidateFilters(v *validator.Validator, f Filters) {
 	// Check that the sort parameter matches a value in the acceptable sort list
 	v.Check(validator.In(f.Sort, f.SortList...), "sort", "invalid sort value")
 }
+
+// The sortColumn() method safely extracts the sort field query parameter
+func (f Filters) sortColumn() string {
+	for _, safeValue := range f.SortList {
+		if f.Sort == safeValue {
+			return strings.TrimPrefix(f.Sort, "-")
+		}
+	}
+	panic("unsafe sort parameter: " + f.Sort)
+}
+
+// The sortOrder() methof determines whether we should sort by DESC/ASC
+func (f Filters) sortOrder() string {
+	if strings.HasPrefix(f.Sort, "-") {
+		return "DESC"
+	}
+	return "ASC"
+}
+// The limit() method determines the LIMIT
+func (f Filters) limit() int {
+	return f.PageSize
+}
+
+// The offset() method calculates the OFFSET
+func (f Filters) offset() int {
+	return (f.Page - 1) * f.PageSize
+}
+
