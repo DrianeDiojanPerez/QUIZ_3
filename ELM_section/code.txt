@@ -1,0 +1,1 @@
+elm make src/Todo_list.elm --output Todo_list.js
