@@ -15,7 +15,7 @@ func (app *application) createtodo_listHandler(w http.ResponseWriter, r *http.Re
 	//our target decode destination
 	var todo_listtodolistdata struct {
 		Task_Name   string   `json:"task_name"`
-		Description string   `json:"desription"`
+		Description string   `json:"description"`
 		Notes       string   `json:"notes"`
 		Category    string   `json:"category"`
 		Priority    string   `json:"priority"`

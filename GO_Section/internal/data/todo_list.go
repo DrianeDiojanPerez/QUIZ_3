@@ -16,7 +16,7 @@ type Todo_list struct {
 	ID          int64     `json:"id"`
 	CreatedAt   time.Time `json:"-"`
 	Task_Name   string    `json:"task_name"`
-	Description string    `json:"desription"`
+	Description string    `json:"description"`
 	Notes       string    `json:"notes"`
 	Category    string    `json:"category"`
 	Priority    string    `json:"priority"`
